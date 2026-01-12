@@ -42,8 +42,12 @@ export async function GET(request: NextRequest) {
   const authorization = request.headers.get("Authorization");
 
   // Here we ensure that we have a valid token.
+  // Return success: false instead of 401 to prevent page errors when not in Farcaster
   if (!authorization || !authorization.startsWith("Bearer ")) {
-    return NextResponse.json({ message: "Missing token" }, { status: 401 });
+    return NextResponse.json({ 
+      success: false,
+      message: "Not authenticated - please open this in Farcaster" 
+    }, { status: 200 });
   }
 
   try {
@@ -71,12 +75,23 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (e) {
+    // Return success: false instead of throwing errors or returning 500
     if (e instanceof Errors.InvalidTokenError) {
-      return NextResponse.json({ message: "Invalid token" }, { status: 401 });
+      return NextResponse.json({ 
+        success: false,
+        message: "Invalid authentication token" 
+      }, { status: 200 });
     }
     if (e instanceof Error) {
-      return NextResponse.json({ message: e.message }, { status: 500 });
+      console.error("Auth error:", e.message);
+      return NextResponse.json({ 
+        success: false,
+        message: "Authentication failed" 
+      }, { status: 200 });
     }
-    throw e;
+    return NextResponse.json({ 
+      success: false,
+      message: "Authentication failed" 
+    }, { status: 200 });
   }
 }

@@ -1,0 +1,225 @@
+.container {
+    margin-top: 2rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.riskBadge {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 2px solid;
+    border-radius: 16px;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.riskEmoji {
+    font-size: 3rem;
+}
+
+.riskInfo {
+    flex: 1;
+}
+
+.riskScore {
+    font-size: 2.5rem;
+    font-weight: 900;
+    font-family: monospace;
+    margin-bottom: 0.25rem;
+}
+
+.riskLabel {
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #94a3b8;
+}
+
+.tokenInfo {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.tokenLogo {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+}
+
+.tokenName {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 0.5rem 0;
+}
+
+.tokenSymbol {
+    font-size: 1rem;
+    color: #60a5fa;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+
+.address {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    font-family: monospace;
+    margin: 0;
+    word-break: break-all;
+}
+
+.marketSection {
+    margin-bottom: 2rem;
+}
+
+.marketGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.marketItem {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+.marketLabel {
+    font-size: 0.875rem;
+    color: #60a5fa;
+    margin-bottom: 0.5rem;
+}
+
+.marketValue {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+}
+
+.flagsSection {
+    margin-bottom: 2rem;
+}
+
+.sectionTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 1rem 0;
+}
+
+.flags {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.flag {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.flagWarning {
+    border-color: rgba(245, 158, 11, 0.5);
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.flagDanger {
+    border-color: rgba(239, 68, 68, 0.5);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.flagHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.flagIcon {
+    font-size: 1.5rem;
+}
+
+.flagTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+}
+
+.flagDescription {
+    color: #cbd5e1;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.analysisSection {
+    margin-bottom: 2rem;
+}
+
+.analysisGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.analysisItem {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+.analysisLabel {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+}
+
+.analysisValue {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: white;
+}
+
+.recommendation {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+
+.recommendation h4 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 0.75rem 0;
+}
+
+.recommendation p {
+    color: #cbd5e1;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.dangerText {
+    color: #fca5a5 !important;
+    font-weight: 600;
+}

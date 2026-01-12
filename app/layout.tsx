@@ -3,20 +3,23 @@ import { Inter, Source_Code_Pro } from "next/font/google";
 import { SafeArea } from "@coinbase/onchainkit/minikit";
 import { minikitConfig } from "../minikit.config";
 import { RootProvider } from "./rootProvider";
+import { WagmiProvider } from "./providers/WagmiProvider";
+import LoadingProvider from "./providers/LoadingProvider";
+import ChatBox from "./components/ChatBox";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: minikitConfig.miniapp.name,
-    description: minikitConfig.miniapp.description,
+    title: "MiddleKid",
+    description: "Your DeFi companion on Base",
     other: {
       "fc:frame": JSON.stringify({
         version: minikitConfig.miniapp.version,
         imageUrl: minikitConfig.miniapp.heroImageUrl,
         button: {
-          title: `Join the ${minikitConfig.miniapp.name} Waitlist`,
+          title: `Join the MiddleKid Waitlist`,
           action: {
-            name: `Launch ${minikitConfig.miniapp.name}`,
+            name: `Launch MiddleKid`,
             type: "launch_frame",
           },
         },
@@ -44,7 +47,12 @@ export default function RootLayout({
     <RootProvider>
       <html lang="en">
         <body className={`${inter.variable} ${sourceCodePro.variable}`}>
-          <SafeArea>{children}</SafeArea>
+          <WagmiProvider>
+            <LoadingProvider>
+              <SafeArea>{children}</SafeArea>
+              <ChatBox />
+            </LoadingProvider>
+          </WagmiProvider>
         </body>
       </html>
     </RootProvider>

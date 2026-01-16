@@ -1,10 +1,52 @@
 "use client";
 
+import { useState } from "react";
 import Navigation from "../components/Navigation";
 import Logo from "../components/Logo";
 import styles from "./page.module.css";
+import SmartInput from "../components/translator/SmartInput";
+import TranslationCard from "../components/translator/TranslationCard";
+import { translateTransaction, translateWallet, translateToken, TranslationResult } from "../utils/babyTranslator";
 
 export default function TranslatorPage() {
+    const [isLoading, setIsLoading] = useState(false);
+    const [result, setResult] = useState<TranslationResult | null>(null);
+
+    const handleTranslate = async (input: string, type: string) => {
+        setIsLoading(true);
+        setResult(null);
+
+        try {
+            let res: TranslationResult;
+            if (type === "TRANSACTION") {
+                res = await translateTransaction(input);
+            } else if (type === "WALLET" || type === "TOKEN") {
+                // Heuristic: Check for mock token patterns (0xdead/0xbad)
+                if (input.toLowerCase().startsWith("0xdead") || input.toLowerCase().startsWith("0xbad")) {
+                    res = await translateToken(input);
+                } else {
+                    res = await translateWallet(input);
+                }
+            } else {
+                res = {
+                    type: "UNKNOWN",
+                    babyExplanation: "I don't know what this is! 😵 pls give me a hash or address.",
+                    safetyStatus: "NEUTRAL"
+                };
+            }
+            setResult(res);
+        } catch (error) {
+            console.error(error);
+            setResult({
+                type: "UNKNOWN",
+                babyExplanation: "Something broke! 💥 I need a nap.",
+                safetyStatus: "DANGER"
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className={styles.container}>
             {/* Navbar Background */}
@@ -23,30 +65,15 @@ export default function TranslatorPage() {
 
             {/* Centered Title - Fixed at Top */}
             <div className={styles.header}>
-                <h1 className={styles.title}>Translator</h1>
+                <h1 className={styles.title}>Translator 🍼</h1>
+                <p className={styles.subtitle}>Explain it to me like I'm 5</p>
             </div>
 
             {/* Content */}
             <div className={styles.contentWrapper}>
-                <div className={styles.comingSoon}>
-                    <div className={styles.icon}>🚧</div>
-                    <h2 className={styles.comingSoonTitle}>Under Development</h2>
-                    <p className={styles.comingSoonText}>
-                        The Translator module is currently being built. This feature will decode complex
-                        blockchain transactions into human-readable explanations.
-                    </p>
-                    <p className={styles.comingSoonSubtext}>
-                        Coming soon: Transaction breakdown, smart contract interaction analysis, and more!
-                    </p>
-
-                    <a
-                        href="https://app.gitbook.com/o/kPdY7vBe3AzKgFA1pn4h/s/XNAsDhibqyfBy41OEGyg/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.docsButton}
-                    >
-                        📖 Read Documentation
-                    </a>
+                <div className={styles.translatorBox}>
+                    <SmartInput onTranslate={handleTranslate} isLoading={isLoading} />
+                    <TranslationCard result={result} />
                 </div>
             </div>
         </div>

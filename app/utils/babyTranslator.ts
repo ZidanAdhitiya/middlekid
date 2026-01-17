@@ -1,5 +1,11 @@
+import { createPublicClient, http, formatEther, parseAbi, Address } from 'viem';
+import { base } from 'viem/chains';
 
-import { checkTokenSecurity, checkWalletBot } from "./mockSecurity";
+// Initialize Viem Client for Base
+const client = createPublicClient({
+    chain: base,
+    transport: http()
+});
 
 export type TranslationResult = {
     type: "TOKEN" | "WALLET" | "TRANSACTION" | "UNKNOWN";
@@ -8,14 +14,9 @@ export type TranslationResult = {
     originalData?: any;
 };
 
-// Helper to determine input type
-export const identifyInputType = (input: string): "TOKEN" | "WALLET" | "TRANSACTION" | "UNKNOWN" => {
-    const cleanInput = input.trim();
-    // Basic regex checks
-    if (/^0x[a-fA-F0-9]{64}$/i.test(cleanInput)) return "TRANSACTION";
-    if (/^0x[a-fA-F0-9]{40}$/i.test(cleanInput)) return "WALLET"; // Addresses can be wallets or tokens
-    return "UNKNOWN";
-};
+// Regex patterns
+const RES_HASH = /^0x[a-fA-F0-9]{64}$/;
+const RES_ADDR = /^0x[a-fA-F0-9]{40}$/;
 
 // Comprehensive Baby Dictionary for explanations
 const babyPhrases = {
@@ -31,15 +32,20 @@ const babyPhrases = {
         "It broke! We need glue. 🧩",
         "No shinies this time. ☁️"
     ],
-    safeWallet: [
+    humanWallet: [
         "A real human bean! 🧍",
         "Just a normal friend! 🎈",
         "Safe and sound! 🛡️"
     ],
-    botWallet: [
-        "Beep Boop! 🤖 Robot alert!",
-        "It moves too fast! SCARY! ⚡",
-        "This friend has no soul. It's code! 💾"
+    richWallet: [
+        "Whoa! Big piggy bank! 🐷💰",
+        "So many treaties! 🍪",
+        "King of the castle! 🏰"
+    ],
+    contract: [
+        "Beep Boop! 🤖 It's a machine!",
+        "Smart words written here! 📜",
+        "Not a person, it's a robot helper! 🦾"
     ],
     scamToken: [
         "BAD TOUCH! 🔥 Do not eat!",
@@ -55,75 +61,154 @@ const babyPhrases = {
 
 const getRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
-export const translateTransaction = async (txHash: string): Promise<TranslationResult> => {
-    // Mock logic based on hash content
-    const isFailure = txHash.toLowerCase().includes("dead") || txHash.includes("0000");
+// Quick synchronous check for UI feedback using Regex only
+export const identifyQuickType = (input: string): "TRANSACTION" | "ADDRESS" | "UNKNOWN" => {
+    const cleanInput = input.trim();
+    if (RES_HASH.test(cleanInput)) return "TRANSACTION";
+    if (RES_ADDR.test(cleanInput)) return "ADDRESS";
+    return "UNKNOWN";
+};
 
-    if (isFailure) {
-        return {
-            type: "TRANSACTION",
-            babyExplanation: getRandom(babyPhrases.failed) + " (Transaction Failed)",
-            safetyStatus: "WARNING"
-        };
+// Helper to determine input type accurately
+export const identifyInputType = async (input: string): Promise<"TOKEN" | "WALLET" | "TRANSACTION" | "UNKNOWN"> => {
+    const cleanInput = input.trim();
+
+    if (RES_HASH.test(cleanInput)) return "TRANSACTION";
+
+    if (RES_ADDR.test(cleanInput)) {
+        try {
+            // Check if address is a contract or EOA
+            const code = await client.getBytecode({ address: cleanInput as Address });
+            // If code exists (length > 0), it's a CONTRACT (likely Token or other contract)
+            // If undefined or "0x", it's a WALLET (EOA)
+            return code ? "TOKEN" : "WALLET";
+        } catch (error) {
+            console.error("Error identifying address type:", error);
+            return "UNKNOWN";
+        }
     }
 
-    return {
-        type: "TRANSACTION",
-        babyExplanation: getRandom(babyPhrases.success) + " (Transaction Confirmed)",
-        safetyStatus: "SAFE"
-    };
+    return "UNKNOWN";
+};
+
+export const translateTransaction = async (txHash: string): Promise<TranslationResult> => {
+    try {
+        const receipt = await client.getTransactionReceipt({ hash: txHash as `0x${string}` });
+
+        if (receipt.status === 'success') {
+            return {
+                type: "TRANSACTION",
+                babyExplanation: getRandom(babyPhrases.success) + " (Transaction Success)",
+                safetyStatus: "SAFE",
+                originalData: {
+                    hash: receipt.transactionHash,
+                    from: receipt.from,
+                    to: receipt.to,
+                    gasUsed: receipt.gasUsed.toString()
+                }
+            };
+        } else {
+            return {
+                type: "TRANSACTION",
+                babyExplanation: getRandom(babyPhrases.failed) + " (Transaction Failed)",
+                safetyStatus: "WARNING",
+                originalData: {
+                    hash: receipt.transactionHash,
+                    status: "reverted"
+                }
+            };
+        }
+    } catch (error) {
+        console.error("Error fetching tx:", error);
+        return {
+            type: "TRANSACTION",
+            babyExplanation: "I couldn't find it! Did you make it up? 🕵️‍♀️",
+            safetyStatus: "NEUTRAL"
+        };
+    }
 };
 
 export const translateWallet = async (address: string): Promise<TranslationResult> => {
-    // If we suspect it might be a token (for the demo, if checking "wallet" input but it has token markers)
-    // We can run the token check first or in parallel? 
-    // For specific "0xdead" inputs we want to force token result if the user didn't specify.
+    try {
+        const balance = await client.getBalance({ address: address as Address });
+        const txCount = await client.getTransactionCount({ address: address as Address });
 
-    // Check for "Bot" markers first
-    const botCheck = await checkWalletBot(address);
-    if (botCheck.isBot) {
+        const ethBalance = parseFloat(formatEther(balance));
+
+        // Logic for explanation
+        let explanation = getRandom(babyPhrases.humanWallet);
+        if (ethBalance > 0.5) {
+            explanation = getRandom(babyPhrases.richWallet);
+        }
+
         return {
             type: "WALLET",
-            babyExplanation: getRandom(babyPhrases.botWallet) + " (High Frequency Bot Detected)",
-            safetyStatus: "WARNING",
-            originalData: botCheck
+            babyExplanation: `${explanation} (Has ${ethBalance.toFixed(4)} ETH)`,
+            safetyStatus: "SAFE",
+            originalData: {
+                balance: ethBalance.toFixed(4) + " ETH",
+                transactions: txCount
+            }
+        };
+
+    } catch (error) {
+        console.error("Error fetching wallet:", error);
+        return {
+            type: "WALLET",
+            babyExplanation: "This friend is hiding! 🙈",
+            safetyStatus: "NEUTRAL"
         };
     }
-
-    // Default to Safe Human
-    return {
-        type: "WALLET",
-        babyExplanation: getRandom(babyPhrases.safeWallet) + " (Normal Human Activity)",
-        safetyStatus: "SAFE",
-        originalData: botCheck
-    };
 };
 
 export const translateToken = async (address: string): Promise<TranslationResult> => {
-    const security = await checkTokenSecurity(address);
-
-    if (security.isHoneypot) {
-        return {
-            type: "TOKEN",
-            babyExplanation: getRandom(babyPhrases.scamToken) + " (Honeypot Detected: Buy YES, Sell NO)",
-            safetyStatus: "DANGER",
-            originalData: security
-        };
+    // Check if it's actually a contract first
+    const code = await client.getBytecode({ address: address as Address });
+    if (!code) {
+        // Technically this shouldn't happen if identifyInputType filtered it, but good fallback
+        return translateWallet(address);
     }
 
-    if (!security.isSafe) {
+    try {
+        // Try to read standard ERC20 properties
+        const abi = parseAbi([
+            'function name() view returns (string)',
+            'function symbol() view returns (string)',
+            'function totalSupply() view returns (uint256)'
+        ]);
+
+        const [name, symbol] = await Promise.all([
+            client.readContract({ address: address as Address, abi, functionName: 'name' }).catch(() => "Unknown"),
+            client.readContract({ address: address as Address, abi, functionName: 'symbol' }).catch(() => "???")
+        ]);
+
+        if (name === "Unknown" && symbol === "???") {
+            // Probably not an ERC20 token, just a generic contract
+            return {
+                type: "TOKEN",
+                babyExplanation: getRandom(babyPhrases.contract) + " (Smart Contract)",
+                safetyStatus: "NEUTRAL",
+                originalData: { isContract: true }
+            };
+        }
+
         return {
             type: "TOKEN",
-            babyExplanation: "Smells funny... 🤢 Put it down.",
-            safetyStatus: "WARNING",
-            originalData: security
+            babyExplanation: `${getRandom(babyPhrases.safeToken)} It's called ${name} (${symbol})!`,
+            safetyStatus: "SAFE", // We assume safe unless external API says otherwise, but valid ERC20 is generally "Safe" structure-wise for a baby
+            originalData: {
+                name,
+                symbol,
+                isContract: true
+            }
+        };
+
+    } catch (error) {
+        console.error("Error fetching token:", error);
+        return {
+            type: "TOKEN",
+            babyExplanation: "It's a weird robot! I don't understand it. 🤖❓",
+            safetyStatus: "WARNING"
         };
     }
-
-    return {
-        type: "TOKEN",
-        babyExplanation: getRandom(babyPhrases.safeToken) + " (Low Risk Token)",
-        safetyStatus: "SAFE",
-        originalData: security
-    };
 };

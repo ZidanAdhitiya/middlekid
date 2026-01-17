@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import styles from "./Translator.module.css";
-import { identifyInputType } from "../../utils/babyTranslator";
+import { identifyQuickType } from "../../utils/babyTranslator";
 
 interface SmartInputProps {
     onTranslate: (input: string, type: string) => void;
@@ -15,7 +15,7 @@ export default function SmartInput({ onTranslate, isLoading }: SmartInputProps) 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
         setInput(val);
-        setType(identifyInputType(val));
+        setType(identifyQuickType(val));
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {

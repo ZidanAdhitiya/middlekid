@@ -6,7 +6,7 @@ import Logo from "../components/Logo";
 import styles from "./page.module.css";
 import SmartInput from "../components/translator/SmartInput";
 import TranslationCard from "../components/translator/TranslationCard";
-import { translateTransaction, translateWallet, translateToken, TranslationResult } from "../utils/babyTranslator";
+import { translateTransaction, translateWallet, translateToken, TranslationResult, identifyInputType } from "../utils/babyTranslator";
 
 export default function TranslatorPage() {
     const [isLoading, setIsLoading] = useState(false);
@@ -18,15 +18,17 @@ export default function TranslatorPage() {
 
         try {
             let res: TranslationResult;
-            if (type === "TRANSACTION") {
+
+            // Allow the utility to identify the real type from the blockchain
+            // This distinguishes smart contracts (Tokens) from EOAs (Wallets)
+            const realType = await identifyInputType(input);
+
+            if (realType === "TRANSACTION") {
                 res = await translateTransaction(input);
-            } else if (type === "WALLET" || type === "TOKEN") {
-                // Heuristic: Check for mock token patterns (0xdead/0xbad)
-                if (input.toLowerCase().startsWith("0xdead") || input.toLowerCase().startsWith("0xbad")) {
-                    res = await translateToken(input);
-                } else {
-                    res = await translateWallet(input);
-                }
+            } else if (realType === "TOKEN") {
+                res = await translateToken(input);
+            } else if (realType === "WALLET") {
+                res = await translateWallet(input);
             } else {
                 res = {
                     type: "UNKNOWN",

@@ -9,6 +9,9 @@ interface Token {
     decimals: number;
     balance: string;
     logo?: string;
+    priceUsd?: number;
+    valueUsd?: number;
+    chain: string;
 }
 
 interface TokenListProps {
@@ -46,7 +49,7 @@ export default function TokenList({ tokens, loading }: TokenListProps) {
             <h2 className={styles.title}>Token Holdings</h2>
             <div className={styles.grid}>
                 {tokens.map((token) => (
-                    <div key={token.contractAddress} className={styles.tokenCard}>
+                    <div key={token.contractAddress + token.chain} className={styles.tokenCard}>
                         <div className={styles.tokenHeader}>
                             {token.logo ? (
                                 <img src={token.logo} alt={token.symbol} className={styles.logo} />
@@ -55,11 +58,26 @@ export default function TokenList({ tokens, loading }: TokenListProps) {
                             )}
                             <div className={styles.tokenInfo}>
                                 <h3 className={styles.tokenName}>{token.name}</h3>
-                                <span className={styles.tokenSymbol}>{token.symbol}</span>
+                                <div className={styles.tokenMeta}>
+                                    <span className={styles.tokenSymbol}>{token.symbol}</span>
+                                    <span className={styles.chainBadge}>{token.chain}</span>
+                                </div>
                             </div>
                         </div>
-                        <div className={styles.balance}>
-                            {formatBalance(token.balance, token.decimals)}
+                        <div className={styles.tokenValues}>
+                            <div className={styles.balance}>
+                                {formatBalance(token.balance, token.decimals)}
+                            </div>
+                            {token.valueUsd !== undefined && (
+                                <div className={styles.usdValue}>
+                                    ${token.valueUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </div>
+                            )}
+                            {token.priceUsd !== undefined && token.priceUsd > 0 && (
+                                <div className={styles.pricePerToken}>
+                                    ${token.priceUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })} / {token.symbol}
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}

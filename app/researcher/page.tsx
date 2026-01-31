@@ -1,16 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import Navigation from "../components/Navigation";
 import Logo from "../components/Logo";
 import ResearchResults from "../components/ResearchResults";
 import styles from "./page.module.css";
 
+type SupportedChain = "base" | "ethereum" | "bsc" | "tron";
+
 interface ResearchResult {
     type: "token" | "wallet" | "contract";
     address: string;
     riskScore: number;
-    riskLevel: "low" | "medium" | "high";
+    riskLevel: "low" | "medium" | "high" | "unknown";
+    confidence?: "low" | "medium" | "high";
+    reasons?: string[];
     flags: any[];
     metadata: any;
     analysis: {
@@ -25,18 +30,39 @@ interface ResearchResult {
         securityScore?: number;
         marketScore?: number;
         metadataScore?: number;
+        dataCoverage?: {
+            hasMetadata: boolean;
+            hasSecurity: boolean;
+            hasMarket: boolean;
+        };
     };
 }
 
 export default function ResearcherPage() {
     const [inputAddress, setInputAddress] = useState("");
+    const [chain, setChain] = useState<SupportedChain>("base");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<ResearchResult | null>(null);
 
+    function validateAddress(addr: string, selectedChain: SupportedChain): boolean {
+        if (selectedChain === "tron") return addr.trim() === "0";
+        return /^0x[a-fA-F0-9]{40}$/.test(addr);
+    }
+
     async function handleResearch() {
-        if (!inputAddress.trim()) {
+        const trimmed = inputAddress.trim();
+        if (!trimmed) {
             setError("Please enter an address");
+            return;
+        }
+
+        if (!validateAddress(trimmed, chain)) {
+            setError(
+                chain === "tron"
+                    ? "For native TRX on Tron, use address '0' (as shown on CoinMarketCap)."
+                    : "Invalid address format. Must start with 0x and be 42 characters long."
+            );
             return;
         }
 
@@ -45,7 +71,7 @@ export default function ResearcherPage() {
             setError(null);
 
             const response = await fetch(
-                `/api/research?type=token&address=${inputAddress.trim()}`
+                `/api/research?type=token&chain=${chain}&address=${trimmed}`
             );
             const data = await response.json();
 
@@ -103,12 +129,41 @@ export default function ResearcherPage() {
                         <h2 className={styles.emptyTitle}>Multi-Source Research Tool</h2>
                         <p className={styles.emptyText}>
                             Analyze tokens using GoPlusLabs security scans + DEX liquidity data
+                            <br />
+                            Mau paham istilah dasar (honeypot, tax, liquidity)? Baca di{" "}
+                            <Link href="/teacher" style={{ color: "rgba(147, 197, 253, 0.95)", textDecoration: "underline" }}>
+                                Teacher
+                            </Link>
+                            .
                         </p>
 
+                        <div className={styles.chainNote}>
+                            Selected chain: <strong>{chain}</strong>
+                        </div>
+
                         <div className={styles.inputSection}>
+                            <select
+                                className={styles.select}
+                                value={chain}
+                                onChange={(e) => {
+                                    setChain(e.target.value as SupportedChain);
+                                    setError(null);
+                                    setResult(null);
+                                }}
+                                disabled={loading}
+                            >
+                                <option value="base">Base (EVM)</option>
+                                <option value="ethereum">Ethereum (EVM)</option>
+                                <option value="bsc">BSC (EVM)</option>
+                                <option value="tron">Tron (native TRX only)</option>
+                            </select>
                             <input
                                 type="text"
-                                placeholder="Enter token address (0x...)"
+                                placeholder={
+                                    chain === "tron"
+                                        ? "Enter token identifier (use 0 for TRX)"
+                                        : "Enter token address (0x...)"
+                                }
                                 value={inputAddress}
                                 onChange={(e) => setInputAddress(e.target.value)}
                                 onKeyPress={(e) => e.key === "Enter" && !loading && handleResearch()}

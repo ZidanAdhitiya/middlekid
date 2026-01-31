@@ -19,7 +19,9 @@ interface ResearchResult {
     type: "token" | "wallet" | "contract";
     address: string;
     riskScore: number;
-    riskLevel: "low" | "medium" | "high";
+    riskLevel: "low" | "medium" | "high" | "unknown";
+    confidence?: "low" | "medium" | "high";
+    reasons?: string[];
     flags: RiskFlag[];
     metadata: TokenMetadata;
     analysis: {
@@ -33,6 +35,11 @@ interface ResearchResult {
         securityScore?: number;
         marketScore?: number;
         metadataScore?: number;
+        dataCoverage?: {
+            hasMetadata: boolean;
+            hasSecurity: boolean;
+            hasMarket: boolean;
+        };
     };
 }
 
@@ -41,16 +48,28 @@ interface ResearchResultsProps {
 }
 
 export default function ResearchResults({ result }: ResearchResultsProps) {
+    const insufficientData = result.riskLevel === "unknown" && result.confidence === "low";
+    const notDetectedByTools =
+        result.analysis?.dataCoverage?.hasSecurity === false &&
+        result.analysis?.dataCoverage?.hasMarket === false;
+
     const getRiskColor = () => {
+        if (result.riskLevel === "unknown") return "#94a3b8"; // Slate
         if (result.riskLevel === "low") return "#10b981"; // Green
         if (result.riskLevel === "medium") return "#f59e0b"; // Yellow
         return "#ef4444"; // Red
     };
 
     const getRiskEmoji = () => {
+        if (result.riskLevel === "unknown") return "❔";
         if (result.riskLevel === "low") return "✅";
         if (result.riskLevel === "medium") return "⚠️";
         return "🚨";
+    };
+
+    const getConfidenceLabel = () => {
+        if (!result.confidence) return "CONFIDENCE: N/A";
+        return `CONFIDENCE: ${result.confidence.toUpperCase()}`;
     };
 
     const formatUSD = (value?: number) => {
@@ -70,13 +89,32 @@ export default function ResearchResults({ result }: ResearchResultsProps) {
                 <div className={styles.riskEmoji}>{getRiskEmoji()}</div>
                 <div className={styles.riskInfo}>
                     <div className={styles.riskScore} style={{ color: getRiskColor() }}>
-                        {result.riskScore}/100
+                        {insufficientData || notDetectedByTools ? "N/A" : `${result.riskScore}/100`}
                     </div>
-                    <div className={styles.riskLabel}>
-                        {result.riskLevel.toUpperCase()} RISK
+                    <div className={styles.riskLabelRow}>
+                        <div className={styles.riskLabel}>
+                            {insufficientData
+                                ? "INSUFFICIENT DATA"
+                                : notDetectedByTools
+                                    ? "NOT DETECTED"
+                                : `${result.riskLevel.toUpperCase()} RISK`}
+                        </div>
+                        <div className={styles.confidenceLabel}>{getConfidenceLabel()}</div>
                     </div>
                 </div>
             </div>
+
+            {/* Reasons */}
+            {result.reasons && result.reasons.length > 0 && (
+                <div className={styles.reasonsSection}>
+                    <h3 className={styles.sectionTitle}>🧠 Why this result?</h3>
+                    <ul className={styles.reasonsList}>
+                        {result.reasons.map((r, idx) => (
+                            <li key={idx} className={styles.reasonsItem}>{r}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
 
             {/* Token Info */}
             <div className={styles.tokenInfo}>
@@ -184,7 +222,9 @@ export default function ResearchResults({ result }: ResearchResultsProps) {
             <div className={styles.recommendation}>
                 <h4>💡 Recommendation</h4>
                 {result.riskLevel === "low" && (
-                    <p>This token appears safe based on security scans and market data. Always DYOR before investing.</p>
+                    <p>
+                        No major red flags detected with strong data coverage. Still verify on multiple sources before investing.
+                    </p>
                 )}
                 {result.riskLevel === "medium" && (
                     <p>
@@ -195,6 +235,12 @@ export default function ResearchResults({ result }: ResearchResultsProps) {
                     <p className={styles.dangerText}>
                         ⚠️ HIGH RISK - Critical security issues or market red flags detected.
                         We strongly recommend avoiding this token.
+                    </p>
+                )}
+                {result.riskLevel === "unknown" && (
+                    <p>
+                        Insufficient or partial data to confidently label this token safe or risky.
+                        Treat as risky until you verify liquidity, contract ownership, and taxes.
                     </p>
                 )}
             </div>

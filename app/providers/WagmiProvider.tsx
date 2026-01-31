@@ -2,7 +2,7 @@
 
 import { ReactNode, useMemo } from "react";
 import { WagmiProvider as WagmiProviderBase, createConfig, http } from "wagmi";
-import { base } from "wagmi/chains";
+import { arbitrum, base } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { coinbaseWallet, walletConnect, injected } from "wagmi/connectors";
 
@@ -14,16 +14,17 @@ export function WagmiProvider({ children }: { children: ReactNode }) {
         // Only create connectors on client side
         if (typeof window === 'undefined') {
             return createConfig({
-                chains: [base],
+                chains: [base, arbitrum],
                 connectors: [],
                 transports: {
                     [base.id]: http(),
+                    [arbitrum.id]: http(),
                 },
             });
         }
 
         return createConfig({
-            chains: [base],
+            chains: [base, arbitrum],
             connectors: [
                 injected(),
                 coinbaseWallet({
@@ -36,6 +37,7 @@ export function WagmiProvider({ children }: { children: ReactNode }) {
             ],
             transports: {
                 [base.id]: http(),
+                [arbitrum.id]: http(),
             },
         });
     }, []);

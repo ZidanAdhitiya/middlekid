@@ -9,6 +9,7 @@ const tabs = [
     { name: "Translator", path: "/translator", icon: "🌐" },
     { name: "Researcher", path: "/researcher", icon: "🔬" },
     { name: "Time Traveller", path: "/time-traveller", icon: "⏰" },
+    { name: "Teacher", path: "/teacher", icon: "🎓" },
 ];
 
 export default function Navigation() {

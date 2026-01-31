@@ -1,10 +1,67 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./ChatBox.module.css";
+
+type ChatMessage = {
+    role: "user" | "assistant";
+    content: string;
+};
 
 export default function ChatBox() {
     const [isOpen, setIsOpen] = useState(false);
+    const [messages, setMessages] = useState<ChatMessage[]>([
+        {
+            role: "assistant",
+            content:
+                "Halo! Aku MiddleKid AI. Kirim payload wallet / tx hash / atau pertanyaan crypto kamu, nanti aku bantu jelasin dan kasih checklist keamanan.",
+        },
+    ]);
+    const [draft, setDraft] = useState("");
+    const [isSending, setIsSending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const scrollRef = useRef<HTMLDivElement | null>(null);
+
+    const canSend = useMemo(() => draft.trim().length > 0 && !isSending, [draft, isSending]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const el = scrollRef.current;
+        if (!el) return;
+        el.scrollTop = el.scrollHeight;
+    }, [isOpen, messages.length, isSending]);
+
+    async function sendMessage() {
+        const content = draft.trim();
+        if (!content || isSending) return;
+
+        setError(null);
+        setIsSending(true);
+        setDraft("");
+
+        const nextMessages: ChatMessage[] = [...messages, { role: "user", content }];
+        setMessages(nextMessages);
+
+        try {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messages: nextMessages }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data?.error || "Gagal menghubungi AI" );
+            }
+
+            const assistantText = typeof data?.content === "string" ? data.content : "";
+            setMessages((prev) => [...prev, { role: "assistant", content: assistantText || "(no response)" }]);
+        } catch (e: any) {
+            setError(e?.message || "Gagal menghubungi AI" );
+        } finally {
+            setIsSending(false);
+        }
+    }
 
     return (
         <>
@@ -25,7 +82,7 @@ export default function ChatBox() {
                             <div className={styles.aiIcon}>🤖</div>
                             <div>
                                 <h3 className={styles.chatTitle}>MiddleKid AI</h3>
-                                <p className={styles.chatStatus}>Coming Soon</p>
+                                <p className={styles.chatStatus}>{isSending ? "Thinking…" : "Online"}</p>
                             </div>
                         </div>
                         <button
@@ -37,20 +94,24 @@ export default function ChatBox() {
                     </div>
 
                     {/* Messages Area */}
-                    <div className={styles.messagesArea}>
-                        <div className={styles.devNotice}>
-                            <div className={styles.noticeIcon}>🚧</div>
-                            <h4>AI Chat Under Development</h4>
-                            <p>
-                                Our AI assistant is being built to help you with crypto analysis,
-                                token research, and DeFi questions. Stay tuned!
-                            </p>
-                            <div className={styles.featuresList}>
-                                <div className={styles.featureItem}>✓ Token analysis assistance</div>
-                                <div className={styles.featureItem}>✓ Market insights</div>
-                                <div className={styles.featureItem}>✓ Risk assessment help</div>
-                                <div className={styles.featureItem}>✓ DeFi strategy guidance</div>
-                            </div>
+                    <div className={styles.messagesArea} ref={scrollRef}>
+                        <div className={styles.messagesList}>
+                            {messages.map((m, idx) => (
+                                <div
+                                    key={idx}
+                                    className={m.role === "user" ? styles.userRow : styles.assistantRow}
+                                >
+                                    <div className={m.role === "user" ? styles.userBubble : styles.assistantBubble}>
+                                        {m.content}
+                                    </div>
+                                </div>
+                            ))}
+                            {isSending && (
+                                <div className={styles.assistantRow}>
+                                    <div className={styles.assistantBubble}>…</div>
+                                </div>
+                            )}
+                            {error && <div className={styles.errorBanner}>{error}</div>}
                         </div>
                     </div>
 
@@ -58,11 +119,25 @@ export default function ChatBox() {
                     <div className={styles.inputArea}>
                         <input
                             type="text"
-                            placeholder="AI Chat coming soon..."
-                            disabled
+                            placeholder="Tanya apa aja… (tx hash / payload / domain)"
+                            value={draft}
+                            onChange={(e) => setDraft(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    sendMessage();
+                                }
+                            }}
+                            disabled={isSending}
                             className={styles.input}
                         />
-                        <button disabled className={styles.sendBtn}>
+                        <button
+                            onClick={sendMessage}
+                            disabled={!canSend}
+                            className={styles.sendBtn}
+                            type="button"
+                            aria-label="Send"
+                        >
                             ➤
                         </button>
                     </div>

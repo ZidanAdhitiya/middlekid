@@ -245,30 +245,201 @@
     margin-top: 2rem;
 }
 
-.walletInfo {
-    background: rgba(255, 255, 255, 0.05);
+/* RESULTS DASHBOARD LAYOUT */
+.resultsView {
+    width: 100%;
+}
+
+.resultsTitle {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid rgba(96, 165, 250, 0.1);
+}
+
+.resultsTitle h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #ffffff 0%, #60a5fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 0.75rem 0;
+    letter-spacing: 1px;
+}
+
+.resultsSubtitle {
+    font-size: 1.125rem;
+    color: #94a3b8;
+    margin: 0;
+    font-weight: 500;
+}
+
+.resultsHeader {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.backToSearch {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.75rem;
+    background: rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    padding: 2rem;
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    color: #e2e8f0;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.backToSearch:hover {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(96, 165, 250, 0.5);
+    color: #60a5fa;
+    transform: translateX(-6px);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+}
+
+.backArrow {
+    font-size: 1.25rem;
+    transition: transform 0.3s;
+}
+
+.backToSearch:hover .backArrow {
+    transform: translateX(-4px);
+}
+
+.analyzedWalletCard {
+    flex: 1;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    backdrop-filter: blur(30px);
+    border: 1.5px solid rgba(96, 165, 250, 0.25);
+    border-radius: 18px;
+    padding: 1.75rem 2.25rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.analyzedWalletCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+}
+
+.walletLabel {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.75rem;
+}
+
+.walletAddressDisplay {
+    font-family: var(--font-source-code-pro), monospace;
+    font-size: 1.25rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.5px;
+    word-break: break-all;
+}
+
+.totalValueCard {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+    backdrop-filter: blur(30px);
+    border: 1.5px solid rgba(34, 197, 94, 0.25);
+    border-radius: 18px;
+    padding: 1.75rem 2.25rem;
+    position: relative;
+    overflow: hidden;
+    min-width: 280px;
+}
+
+.totalValueCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #22c55e, #3b82f6, #8b5cf6);
+}
+
+.totalValueDisplay {
+    font-family: var(--font-source-code-pro), monospace;
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #22c55e 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.5px;
+}
+
+.analysisContent {
+    width: 100%;
+}
+
+/* OLD WALLET INFO (keeping for compatibility) */
+
+.walletInfo {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+    backdrop-filter: blur(30px);
+    border: 1.5px solid rgba(96, 165, 250, 0.2);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.walletInfo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
 }
 
 .walletInfo h2 {
-    font-size: 1.5rem;
+    font-size: 1.375rem;
     font-weight: 700;
-    color: white;
-    margin-bottom: 1rem;
+    color: #e2e8f0;
+    margin-bottom: 1.25rem;
+    letter-spacing: 0.5px;
 }
 
 .address {
-    font-family: monospace;
-    font-size: 0.9375rem;
-    color: #60a5fa;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 1.5rem;
+    font-family: var(--font-source-code-pro), monospace;
+    font-size: 1.0625rem;
+    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-color: rgba(15, 23, 42, 0.6);
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    border: 1.5px solid rgba(96, 165, 250, 0.2);
+    margin-bottom: 0;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    word-break: break-all;
 }
 
 .placeholder {
@@ -326,6 +497,143 @@
     font-style: italic;
 }
 
+/* Input Section */
+.inputSection {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    max-width: 650px;
+    margin: 3rem auto 3rem;
+    padding: 2.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.inputWrapper {
+    display: flex;
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.input {
+    flex: 1;
+    padding: 1.125rem 1.75rem;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(96, 165, 250, 0.2);
+    border-radius: 14px;
+    color: white;
+    font-size: 1rem;
+    font-family: var(--font-source-code-pro), monospace;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.3px;
+}
+
+.input::placeholder {
+    color: #64748b;
+    opacity: 0.7;
+}
+
+.input:focus {
+    outline: none;
+    border-color: rgba(59, 130, 246, 0.6);
+    background: rgba(15, 23, 42, 0.8);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15),
+        0 4px 16px rgba(59, 130, 246, 0.2);
+    transform: translateY(-1px);
+}
+
+.input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.analyzeButton {
+    padding: 1.125rem 3rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border: none;
+    border-radius: 14px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4),
+        0 0 0 1px rgba(96, 165, 250, 0.3);
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.analyzeButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.analyzeButton:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+.analyzeButton:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5),
+        0 0 0 1px rgba(96, 165, 250, 0.5);
+    transform: translateY(-3px);
+}
+
+.analyzeButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.resetButton {
+    margin-top: 1.25rem;
+    padding: 0.875rem 1.75rem;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(20px);
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    color: #e2e8f0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.resetButton:hover {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(96, 165, 250, 0.5);
+    color: #60a5fa;
+    transform: translateX(-6px);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+}
+
+.devWarning {
+    padding: 1rem 1.5rem;
+    background: rgba(251, 191, 36, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 12px;
+    color: #fbbf24;
+    font-size: 0.875rem;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+
 @media (max-width: 768px) {
     .header {
         flex-direction: column;
@@ -339,5 +647,20 @@
 
     .features {
         grid-template-columns: 1fr;
+    }
+
+    .resultsHeader {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.25rem;
+    }
+
+    .backToSearch {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .walletAddressDisplay {
+        font-size: 1rem;
     }
 }

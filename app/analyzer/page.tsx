@@ -18,6 +18,7 @@ interface Token {
     logo?: string;
     priceUsd?: number;
     valueUsd?: number;
+    chain: string;
 }
 
 export default function AnalyzerPage() {
@@ -80,7 +81,12 @@ export default function AnalyzerPage() {
                 throw new Error(data.error || "Failed to fetch tokens");
             }
 
-            setTokens(data.tokens);
+            setTokens(
+                (data.tokens as any[]).map((t) => ({
+                    ...t,
+                    chain: t.chain || "Base",
+                }))
+            );
             setTotalValue(data.totalValue || "0");
         } catch (err: any) {
             console.error("Error fetching tokens:", err);

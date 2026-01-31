@@ -158,6 +158,7 @@ export default function TimeTravellerPage() {
     async function handleExecute() {
         setTxError(null);
         setTxHash(null);
+        setFlowError(null);
 
         if (!address) {
             setTxError("Wallet belum connect.");
@@ -194,26 +195,29 @@ export default function TimeTravellerPage() {
         const implementation = isBullish ? optionImplementationInverseCallBase : optionImplementationPutBase;
         const collateral = isBullish ? baseWeth : baseUsdc;
 
+        const zeroAddress = "0x0000000000000000000000000000000000000000" as const;
+        const emptyBytes = "0x" as const;
+
         const params = {
             requester: address,
-            existingOptionAddress: "0x0000000000000000000000000000000000000000",
+            existingOptionAddress: zeroAddress,
             collateral,
             collateralPriceFeed: baseEthUsdPriceFeed,
             implementation,
             strikes: [strike],
             numContracts: BigInt(numContracts),
-            requesterDeposit: 0n,
-            collateralAmount: 0n,
+            requesterDeposit: BigInt(0),
+            collateralAmount: BigInt(0),
             expiryTimestamp,
             offerEndTimestamp,
             isRequestingLongPosition: true,
             convertToLimitOrder: false,
-            extraOptionData: "0x",
+            extraOptionData: emptyBytes,
         };
 
         const tracking = {
-            referralId: 0n,
-            eventCode: 0n,
+            referralId: BigInt(0),
+            eventCode: BigInt(0),
         };
 
         setIsExecuting(true);
@@ -222,7 +226,7 @@ export default function TimeTravellerPage() {
                 address: optionFactoryAddressBase,
                 abi: optionFactoryAbi,
                 functionName: "requestForQuotation",
-                args: [params, tracking, 0n, publicKey],
+                args: [params, tracking, BigInt(0), publicKey],
                 account: address,
             });
 
